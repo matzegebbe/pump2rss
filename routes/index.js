@@ -99,23 +99,27 @@ var userAsAuthor = function(res, user) {
 
 var activityAsEntry = function(res, user, item) {
 
-    if (item.verb == "post") {
+    if (item.object.deleted || item.object.objectType == "image" ) { return; } 
+
+    if (item.verb == "post" || item.verb == "share") {
         activityAsImpliedEntry(res, user, item);
-    } else {
+     }
+     else {
         activityAsFullEntry(res, user, item);
     }
 };
 
 var activityAsImpliedEntry = function(res, user, item) {
-    activityObject(res, user, item.object, 'entry');
+    activityObject(res, user, item.object, 'entry', item);
 };
 
-var activityObject = function(res, user, obj, tag) {
+var activityObject = function(res, user, obj, tag, item) {
 
     var stripTags = function(str) {
             return str.replace(/<(?:.|\n)*?>/gm, '');
         };
 
+   
     res.write('<'+tag+'>\n');
 
     if (tag == 'author') {
@@ -127,7 +131,10 @@ var activityObject = function(res, user, obj, tag) {
     if (tag == 'author') {
         res.write('<name>'+obj.displayName+'</name>\n');
     } else {
-        res.write('<title>'+((obj.displayName) ? obj.displayName : '')+'</title>\n');
+        if(typeof item != "undefined") { 
+         res.write('<description>'+item.content.replace(/(<([^>]+)>)/ig,"")+'</description>\n');
+         res.write('<title type="html">'+sanitize(obj.content).escape()+'</title>\n'); }
+         res.write('<content type="html">'+sanitize(item.content).escape()+'</content>\n');
     }
 
     if (obj.published) {
@@ -146,10 +153,6 @@ var activityObject = function(res, user, obj, tag) {
 
     if (obj.summary) {
         res.write('<summary>'+stripTags(sanitize(obj.summary).entityDecode())+'</summary>\n');
-    }
-
-    if (obj.content) {
-        res.write('<content type="html">'+sanitize(obj.content).escape()+'</content>\n');
     }
 
     if (obj.image) {
