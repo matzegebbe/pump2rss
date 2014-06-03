@@ -133,8 +133,9 @@ var activityObject = function(res, user, obj, tag, item) {
     } else {
         if(typeof item != "undefined") { 
          res.write('<description>'+item.content.replace(/(<([^>]+)>)/ig,"")+'</description>\n');
-         res.write('<title type="html">'+sanitize(obj.content).escape()+'</title>\n'); }
+         res.write('<title type="html">'+sanitize(obj.content).escape()+'</title>\n'); 
          res.write('<content type="html">'+sanitize(item.content).escape()+'</content>\n');
+        }
     }
 
     if (obj.published) {
